@@ -1,0 +1,51 @@
+require 'rack/test'
+require_relative '../../app/api'
+module MemberTracker
+  RSpec.describe 'Member Tracker API' do
+    include Rack::Test::Methods
+    def app
+      MemberTracker::API.new
+    end
+    def post_member(member)
+      post '/save/member', member
+      follow_redirect!
+      expect(last_response.status).to eq(302)
+      m = /(\/show\/member\/)(\d+)/.match(last_request.url)
+      expect(m[0]).to match(/\d+/)
+      expect(m[1]).to eq("/show/member/")
+      member.merge(id: m[1])
+    end
+    it 'records submitted member' do
+      memberN = {
+        fname: 'Nick',
+        lname: 'Appelmans',
+        call: 'KI7PTT',
+        paid_up: 0
+      }
+      post '/save/member', memberN
+      follow_redirect!
+      expect(last_request.url).to match(/\/show\/member\/\d+/)
+      expect(last_response.body).to include("success")
+    end
+    it 'retrieves members by paid_up status' do
+      memberN = post_member(
+        fname: 'Nick',
+        lname: 'Appelmans',
+        call: 'KI7PTT',
+        paid_up: 0
+      )
+      memberD = post_member(
+        fname: 'Dick',
+        lname: 'Appelmans',
+        call: 'KI7LTT',
+        paid_up: 1
+      )
+      memberS = post_member(
+        fname: 'Sick',
+        lname: 'Appelmans',
+        call: 'KI7LTT',
+        paid_up: 1
+      )
+    end
+  end
+end
