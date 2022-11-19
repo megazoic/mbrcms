@@ -18,14 +18,14 @@ else
   Refrigerator.freeze_core
 end
 
-App.plugin :not_found do
+Mbrcms.plugin :not_found do
   raise "404 - File Not Found"
 end
-App.plugin :error_handler do |e|
+Mbrcms.plugin :error_handler do |e|
   raise e
 end
 
-Capybara.app = App.freeze.app
+Capybara.app = Mbrcms.freeze.app
 Capybara.exact = true
 
 class Minitest::HooksSpec
